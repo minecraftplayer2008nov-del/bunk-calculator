@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bunk Planner</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F4EDDC;--card:#FBF7EC;--card2:#EDE4CF;--line:#D9CDB0;--text:#2B2820;--muted:#7A7260;
+  --accent:#2F5D50;--on-accent:#FBF7EC;--ok:#2E7D4F;--warn:#A86A12;--bad:#B23A3A;--track:#E3D9C0;
+  --a1:#F2B98B;--a2:#9FC4A8;--a3:#B9A6D9;--aop:.55;--g1:#D9622A;--g2:#2A8F6C;--g3:#7650C9;
+  color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+:root[data-theme="dark"]{
+  --bg:#0E0E10;--card:#17171A;--card2:#202024;--line:#2C2C32;--text:#ECEAE4;--muted:#8E8C86;
+  --accent:#E3C98E;--on-accent:#17171A;--ok:#5FD08F;--warn:#E8B04F;--bad:#F27272;--track:#26262B;
+  --a1:#5B4BDB;--a2:#0EA5A0;--a3:#C2417A;--aop:.45;--g1:#8F82FF;--g2:#2EE0D8;--g3:#FF72B4;color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--text);font:400 14.5px/1.5 "IBM Plex Sans",system-ui,sans-serif;transition:background .25s}
+.aura{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;opacity:0;transition:opacity .5s;animation:hue 20s linear infinite}
+@keyframes hue{from{filter:hue-rotate(0deg)}to{filter:hue-rotate(360deg)}}
+body.aura-on .aura{opacity:1}
+.aura i{position:absolute;width:55vmax;height:55vmax;border-radius:50%;filter:blur(90px);opacity:var(--aop)}
+.aura i:nth-child(1){background:var(--a1);top:-15vmax;left:-12vmax;animation:d1 22s ease-in-out infinite alternate}
+.aura i:nth-child(2){background:var(--a2);bottom:-20vmax;right:-14vmax;animation:d2 26s ease-in-out infinite alternate}
+.aura i:nth-child(3){background:var(--a3);top:30%;left:35%;width:40vmax;height:40vmax;animation:d3 30s ease-in-out infinite alternate}
+@keyframes d1{to{transform:translate(18vmax,12vmax)}}
+@keyframes d2{to{transform:translate(-16vmax,-10vmax)}}
+@keyframes d3{to{transform:translate(-14vmax,10vmax)}}
+@media (prefers-reduced-motion:reduce){.aura,.aura i,body.aura-on h1{animation:none}}
+.wrap{position:relative;z-index:1;max-width:720px;margin:0 auto;padding:22px 16px 60px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+h1{font:600 22px/1.2 "IBM Plex Sans",sans-serif;margin:0}
+body.aura-on h1{background:linear-gradient(90deg,var(--g1),var(--g2),var(--g3),var(--g1));background-size:200% auto;-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;animation:hueg 20s linear infinite,slide 8s linear infinite}
+@keyframes hueg{from{filter:hue-rotate(0deg) drop-shadow(0 0 9px var(--g2))}to{filter:hue-rotate(360deg) drop-shadow(0 0 9px var(--g2))}}
+@keyframes slide{to{background-position:200% center}}
+.tog{display:flex;gap:8px}
+button{font:500 13.5px "IBM Plex Sans",sans-serif;border:1px solid var(--line);border-radius:8px;padding:8px 12px;cursor:pointer;background:var(--card);color:var(--text)}
+button:hover{background:var(--card2)}
+button.on{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+button.primary{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+button:disabled{opacity:.4;cursor:default}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.card{background:color-mix(in srgb,var(--card) 75%,transparent);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px}
+.grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:10px;align-items:end}
+@media(max-width:620px){.grid{grid-template-columns:1fr 1fr}.grid .nm{grid-column:1/3}.grid button{grid-column:1/3}}
+label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--muted)}
+input{font:400 14.5px "IBM Plex Sans",sans-serif;color:var(--text);background:color-mix(in srgb,var(--bg) 75%,transparent);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%}
+.err{color:var(--bad);font-size:13px;margin:8px 0 0;min-height:18px}
+.opts{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:13.5px;color:var(--muted)}
+.opts input{width:64px}
+.tabs{display:flex;gap:6px;margin:16px 0 12px}
+.row1{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.name{font-weight:600;font-size:16px;margin:0}
+.pct{font-weight:600;font-size:22px;font-variant-numeric:tabular-nums}
+.meta{color:var(--muted);font-size:13px}
+.bar{position:relative;height:6px;background:var(--track);border-radius:4px;margin:10px 0 4px}
+.fill{height:100%;border-radius:4px}
+.mark{position:absolute;top:-3px;width:2px;height:12px;background:var(--text);opacity:.55}
+.msg{margin:8px 0 0;font-size:14px}
+.ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}
+.acts{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.acts .sp{flex:1}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.stat{border:1px solid var(--line);border-radius:8px;padding:8px;text-align:center}
+.stat b{display:block;font-size:18px;font-weight:600}.stat span{font-size:12px;color:var(--muted)}
+.empty{text-align:center;color:var(--muted);padding:26px 8px}
+</style>
+</head>
+<body>
+<div class="aura"><i></i><i></i><i></i></div>
+<div class="wrap">
+  <header>
+    <h1>Bunk Planner</h1>
+    <div class="tog">
+      <button id="theme" aria-label="Switch between cream and black background"></button>
+      <button id="aura" aria-pressed="false">Aura lights</button>
+    </div>
+  </header>
+
+  <div class="card">
+    <div class="grid">
+      <label class="nm">Subject<input id="n" placeholder="e.g. Probability" maxlength="40"></label>
+      <label>Total (optional)<input id="t" type="number" min="1" inputmode="numeric"></label>
+      <label>Held so far<input id="h" type="number" min="0" inputmode="numeric" placeholder="0"></label>
+      <label>Attended<input id="a" type="number" min="0" inputmode="numeric" placeholder="0"></label>
+      <button id="add" class="primary">Add</button>
+    </div>
+    <p class="err" id="err"></p>
+    <div class="opts">Required attendance <input id="tg" type="number" min="1" max="100"> %</div>
+  </div>
+
+  <div class="tabs">
+    <button id="tab-s">Per subject</button>
+    <button id="tab-t">Overall</button>
+  </div>
+  <div id="out"></div>
+</div>
+
+<script>
+var KEY="attendance-planner-v2",S={subjects:[],target:75,view:"s",theme:"light",aura:false};
+try{var raw=localStorage.getItem(KEY);if(!raw)raw=localStorage.getItem("attendance-planner-v1");
+ if(raw){var p=JSON.parse(raw);if(p&&Array.isArray(p.subjects)){S.subjects=p.subjects;S.target=p.target||75;S.view=p.view||"s";S.theme=p.theme==="dark"?"dark":"light";S.aura=!!p.aura}}}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+var $=function(i){return document.getElementById(i)};
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+
+function open(H,A){
+  var p=S.target/100,cur=H?A/H*100:0,st,text,need=0;
+  if(H===0){return{req:0,rem:0,need:0,cur:0,st:"warn",text:"Add classes held and attended to see your plan.",open:true}}
+  if(A/H>=p-1e-9){var m=p>=1?0:Math.floor(A/p+1e-9-H);st="ok";text=m>0?"Safe. You can skip the next <b>"+m+"</b> class"+(m>1?"es":"")+" and stay at "+S.target+"% or more.":"On target. Skipping the next class would drop you below "+S.target+"%."}
+  else if(p>=1){st="bad";text="You can’t get back to 100%."}
+  else{need=Math.ceil((p*H-A)/(1-p)-1e-9);st=need>10?"bad":"warn";text="Attend the next <b>"+need+"</b> class"+(need>1?"es":"")+" in a row to reach "+S.target+"%."}
+  return{req:0,rem:0,need:need,cur:cur,st:st,text:text,open:true};
+}
+function calc(T,H,A){
+  if(!T)return open(H,A);
+  var req=Math.ceil(S.target/100*T-1e-9),rem=T-H,need=Math.max(0,req-A),cur=H?A/H*100:0,best=T?(A+rem)/T*100:0,st,text;
+  if(need<=0){st="ok";text=rem===0?"Semester done. You finished at or above "+S.target+"%.":"Safe. You can skip up to <b>"+(A+rem-req)+"</b> of the remaining "+rem+" classes and still reach "+S.target+"%."}
+  else if(need>rem){st="bad";text="Out of reach. Even attending all "+rem+" remaining classes gives <b>"+best.toFixed(1)+"%</b>."}
+  else{st=need/Math.max(rem,1)>.8?"bad":"warn";text="Attend at least <b>"+need+"</b> of the next "+rem+" classes to reach "+S.target+"%."+(rem-need===0?" You can’t miss any.":" You can miss "+(rem-need)+".")}
+  return{req:req,rem:rem,need:need,cur:cur,st:st,text:text};
+}
+function col(st){return"var(--"+(st==="ok"?"ok":st==="warn"?"warn":"bad")+")"}
+function bar(cur){return'<div class="bar"><div class="fill" style="width:'+Math.min(100,cur)+'%;background:'+(cur>=S.target?"var(--ok)":"var(--bad)")+'"></div><div class="mark" style="left:'+S.target+'%" title="Target"></div></div>'}
+function applyLook(){
+  document.documentElement.setAttribute("data-theme",S.theme);
+  document.body.classList.toggle("aura-on",S.aura);
+  $("theme").textContent=S.theme==="light"?"Switch to black":"Switch to cream";
+  $("aura").className=S.aura?"on":"";$("aura").setAttribute("aria-pressed",S.aura);
+  $("aura").textContent="Aura lights: "+(S.aura?"On":"Off");
+}
+function render(){
+  applyLook();
+  $("tab-s").className=S.view==="s"?"on":"";$("tab-t").className=S.view==="t"?"on":"";
+  $("tg").value=S.target;
+  var o=$("out");
+  if(!S.subjects.length){o.innerHTML='<div class="empty">No subjects yet. Add one above to see how many classes you need.</div>';return}
+  if(S.view==="s"){
+    o.innerHTML=S.subjects.map(function(s,i){
+      var c=calc(s.T,s.H,s.A),full=(s.T&&s.H>=s.T)?" disabled":"";
+      return'<div class="card"><div class="row1"><h2 class="name">'+esc(s.n)+'</h2><span class="pct" style="color:'+col(c.st)+'">'+c.cur.toFixed(1)+'%</span></div><div class="meta">Attended '+s.A+' of '+s.H+' held'+(s.T?' · '+s.T+' total':'')+'</div>'+bar(c.cur)+'<p class="msg '+c.st+'">'+c.text+'</p><div class="acts"><button data-i="'+i+'" data-k="p"'+full+'>Present</button><button data-i="'+i+'" data-k="a"'+full+'>Absent</button><button data-i="'+i+'" data-k="u">Undo</button><span class="sp"></span><button data-i="'+i+'" data-k="d">Remove</button></div></div>';
+    }).join("");
+  }else{
+    var T=0,H=0,A=0,unk=false;S.subjects.forEach(function(s){T+=s.T;H+=s.H;A+=s.A;if(!s.T)unk=true});
+    var c=calc(unk?0:T,H,A);
+    o.innerHTML='<div class="card"><div class="row1"><h2 class="name">All subjects ('+S.subjects.length+')</h2><span class="pct" style="color:'+col(c.st)+'">'+c.cur.toFixed(1)+'%</span></div><div class="meta">Attended '+A+' of '+H+' held'+(unk?'':' · '+T+' total')+'</div>'+bar(c.cur)+'<p class="msg '+c.st+'">'+c.text+'</p><div class="stats"><div class="stat"><b>'+A+'</b><span>Attended</span></div>'+(c.open?'':'<div class="stat"><b>'+c.req+'</b><span>Needed in total</span></div><div class="stat"><b>'+c.rem+'</b><span>Classes left</span></div>')+'</div></div>';
+  }
+}
+$("add").onclick=function(){
+  var n=$("n").value.trim(),T=parseInt($("t").value,10),H=parseInt($("h").value||"0",10),A=parseInt($("a").value||"0",10),e=$("err");
+  if(!n){e.textContent="Enter a subject name.";return}
+  if($("t").value.trim()!==""&&!(T>0)){e.textContent="Total classes must be 1 or more, or leave it blank.";return}
+  if(isNaN(T))T=0;
+  if(isNaN(H)||H<0||(T>0&&H>T)){e.textContent="Held classes must be between 0 and the total.";return}
+  if(isNaN(A)||A<0||A>H){e.textContent="Attended classes can’t be more than held classes.";return}
+  e.textContent="";S.subjects.push({n:n,T:T,H:H,A:A,log:[]});
+  ["n","t","h","a"].forEach(function(i){$(i).value=""});save();render();
+};
+$("out").onclick=function(ev){
+  var b=ev.target.closest("button");if(!b)return;
+  var i=+b.dataset.i,k=b.dataset.k,s=S.subjects[i];if(!s)return;s.log=s.log||[];
+  if(k==="p"&&(!s.T||s.H<s.T)){s.H++;s.A++;s.log.push("p")}
+  else if(k==="a"&&(!s.T||s.H<s.T)){s.H++;s.log.push("a")}
+  else if(k==="u"){var l=s.log.pop();if(l==="p"){s.H--;s.A--}else if(l==="a"){s.H--}}
+  else if(k==="d"){S.subjects.splice(i,1)}
+  save();render();
+};
+$("tg").onchange=function(){var v=parseInt(this.value,10);S.target=(v>0&&v<=100)?v:75;save();render()};
+$("tab-s").onclick=function(){S.view="s";save();render()};
+$("tab-t").onclick=function(){S.view="t";save();render()};
+$("theme").onclick=function(){S.theme=S.theme==="light"?"dark":"light";save();render()};
+$("aura").onclick=function(){S.aura=!S.aura;save();render()};
+render();
+</script>
+</body>
+</html>
